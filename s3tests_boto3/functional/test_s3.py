@@ -2039,10 +2039,10 @@ def test_multi_object_delete_lol():
     response = main_client.list_objects(Bucket=bucket_name)
     eq(len(response['Contents']), 2)
 
-    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
+    grant = { 'Grants': [{'Grantee': {'ID': get_alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': get_main_display_name, 'ID': get_main_user_id}}
     main_client.put_object_acl(Bucket=bucket_name, Key='key0', AccessControlPolicy=grant)
 
-    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
+    grant = { 'Grants': [{'Grantee': {'ID': get_alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': get_main_display_name, 'ID': get_main_user_id}}
     main_client.put_object_acl(Bucket=bucket_name, Key='errKey', AccessControlPolicy=grant)
 
     objs_dict = _make_objs_dict(key_names=key_names)
@@ -2053,7 +2053,7 @@ def test_multi_object_delete_lol():
     eq(len(response['Errors']), 1)
     eq(response['Errors'][0]['Key'], 'errKey')
     eq(response['Errors'][0]['Code'], 403)
-    
+
 @attr(resource='object')
 @attr(method='put')
 @attr(operation='write zero-byte key')

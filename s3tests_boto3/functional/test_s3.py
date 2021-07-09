@@ -9506,7 +9506,7 @@ def test_lifecycle_transition_set_invalid_date():
     e = assert_raises(ClientError, client.put_bucket_lifecycle_configuration, Bucket=bucket_name, LifecycleConfiguration=lifecycle)
     status, error_code = _get_status_and_error_code(e.response)
     eq(status, 400)
-    
+
 @attr(resource='bucket')
 @attr(method='get')
 @attr(operation='get lifecycle config transition')
@@ -9520,8 +9520,9 @@ def test_lifecycle_policy_transition():
     eq(response['ResponseMetadata']['HTTPStatusCode'], 200)
     
     response = client.get_bucket_lifecycle_configuration(Bucket=bucket_name)
-    assert 'Transitions' in response['Rules'][0]
-    eq(len(response['Rules']['Transitions']), 1)
+    lc_rule = response['Rules'][0]
+    assert 'Transitions' in lc_rule
+    eq(len(lc_rule['Transitions']), 1)
 
 
 @attr(resource='bucket')

@@ -2028,6 +2028,33 @@ def test_multi_objectv2_delete():
     assert 'Contents' not in response
 
 @attr(resource='object')
+@attr(method='post')
+@attr(operation='delete multiple objects error')
+@attr(assertion='error in deleting multiple objects with a single call')
+def test_multi_object_delete_lol():
+    key_names = ['key0', 'errKey']
+    bucket_name = _create_objects(keys=key_names)
+    main_client = get_client()
+    alt_client =  get_alt_client()
+    response = main_client.list_objects(Bucket=bucket_name)
+    eq(len(response['Contents']), 2)
+
+    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
+    main_client.put_object_acl(Bucket=bucket_name, Key='key0', AccessControlPolicy=grant)
+
+    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
+    main_client.put_object_acl(Bucket=bucket_name, Key='errKey', AccessControlPolicy=grant)
+
+    objs_dict = _make_objs_dict(key_names=key_names)
+    response = alt_client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
+
+    eq(len(response['Deleted']), 1)
+    assert 'Errors' in response
+    eq(len(response['Errors']), 1)
+    eq(response['Errors'][0]['Key'], 'errKey')
+    eq(response['Errors'][0]['Code'], 403)
+    
+@attr(resource='object')
 @attr(method='put')
 @attr(operation='write zero-byte key')
 @attr(assertion='correct content length')

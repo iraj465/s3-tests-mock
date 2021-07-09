@@ -2032,36 +2032,18 @@ def test_multi_objectv2_delete():
 @attr(operation='delete multiple objects error')
 @attr(assertion='error in deleting multiple objects with a single call')
 def test_multi_object_delete_lol():
-    key_names = ['key0', 'errKey']
+    key_names = ['key0', 'key1']
     bucket_name = get_new_bucket_name()
-    main_client = get_client()
-    alt_client = get_alt_client()
+    bucket = get_new_bucket_resource(name=bucket_name)
 
-    main_client.create_bucket(Bucket=bucket_name, ACL='public-read-write')
     for key in key_names:
-        main_client.put_object(Bucket=bucket_name,Body=key, Key=key)
+        obj = bucket.put_object(Bucket=bucket_name,Body=key, Key=key)
 
+    bucket.delete_keys(keys=key_names)
     response = main_client.list_objects(Bucket=bucket_name)
     eq(len(response['Contents']), 2)
-
-    alt_user_id = get_alt_user_id()
-    alt_display_name = get_alt_display_name()
-
-    main_user_id = get_main_user_id()
-    main_display_name = get_main_display_name()
-
-    # grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
-    # main_client.put_object_acl(Bucket=bucket_name, Key='key0', AccessControlPolicy=grant)
     
-    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
-    main_client.put_object_acl(Bucket=bucket_name, Key='errKey', AccessControlPolicy=grant)
-
-    objs_dict = _make_objs_dict(key_names=key_names)
-    response = alt_client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
-    # response = main_client.list_objects(Bucket=bucket_name)
-
-    
-    assert 'Errors' in response
+    assert 'Errors' not in in response
     eq(len(response['Errors']), 1)
     eq(len(response['Deleted']), 1)
     eq(response['Errors'][0]['Key'], 'errKey')

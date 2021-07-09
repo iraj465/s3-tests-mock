@@ -2039,9 +2039,15 @@ def test_multi_object_delete_lol():
     response = main_client.list_objects(Bucket=bucket_name)
     eq(len(response['Contents']), 2)
 
+    alt_user_id = get_alt_user_id()
+    alt_display_name = get_alt_display_name()
+
+    main_user_id = get_main_user_id()
+    main_display_name = get_main_display_name()
+
     grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
     main_client.put_object_acl(Bucket=bucket_name, Key='key0', AccessControlPolicy=grant)
-
+    
     grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
     main_client.put_object_acl(Bucket=bucket_name, Key='errKey', AccessControlPolicy=grant)
 
@@ -2053,7 +2059,7 @@ def test_multi_object_delete_lol():
     eq(len(response['Errors']), 1)
     eq(response['Errors'][0]['Key'], 'errKey')
     eq(response['Errors'][0]['Code'], 403)
-    
+
 @attr(resource='object')
 @attr(method='put')
 @attr(operation='write zero-byte key')

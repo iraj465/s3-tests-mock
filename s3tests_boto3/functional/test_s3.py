@@ -2049,11 +2049,11 @@ def test_multi_object_delete_lol():
 
 def test_lol():
     bucket_name = get_new_bucket()
-    client = get_S3client()
+    client = get_client()
     status = {'LoggingEnabled': {'TargetBucket': bucket_name, 'TargetGrants': [{'Grantee': {'DisplayName': main_display_name, 'ID': main_user_id,'Type': 'CanonicalUser'},'Permission': 'FULL_CONTROL'}], 'TargetPrefix': 'foologgingprefix'}}
     client.put_bucket_logging(Bucket=bucket_name, BucketLoggingStatus=status)
     client.get_bucket_logging(Bucket=bucket_name)
-    
+
 @attr(resource='object')
 @attr(method='post')
 @attr(operation='delete multiple objects error')

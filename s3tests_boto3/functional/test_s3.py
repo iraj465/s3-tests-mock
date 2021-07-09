@@ -2039,7 +2039,27 @@ def test_multi_object_delete_lol():
     for key in key_names:
         obj = bucket.put_object(Bucket=bucket_name,Body=key, Key=key)
 
-    bucket.delete_objects(keys=key_names)
+    bucket.delete_objects(Delete=key_names)
+    eq(len(response['Deleted']), 2)    
+    assert 'Errors' not in response
+    eq(len(response['Errors']), 1)
+    eq(response['Errors'][0]['Key'], 'errKey')
+    eq(response['Errors'][0]['Code'], 403)
+
+@attr(resource='object')
+@attr(method='post')
+@attr(operation='delete multiple objects error')
+@attr(assertion='error in deleting multiple objects with a single call')
+def test_multi_object_delete_lol2():
+    key_names = ['key0', 'key1']
+    bucket_name = get_new_bucket_name()
+    bucket = get_new_bucket_resource(name=bucket_name)
+
+    for key in key_names:
+        obj = bucket.put_object(Bucket=bucket_name,Body=key, Key=key)
+
+    key_names = ['key0', 'key2']
+    bucket.delete_objects(Delete=key_names)
     eq(len(response['Deleted']), 2)    
     assert 'Errors' not in response
     eq(len(response['Errors']), 1)

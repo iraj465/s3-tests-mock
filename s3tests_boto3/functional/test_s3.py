@@ -2058,7 +2058,7 @@ def test_multi_object_delete_lol():
 
     objs_dict = _make_objs_dict(key_names=key_names)
     response = alt_client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
-    response = main_client.list_objects(Bucket=bucket_name)
+    # response = main_client.list_objects(Bucket=bucket_name)
 
     eq(len(response['Deleted']), 1)
     assert 'Errors' in response

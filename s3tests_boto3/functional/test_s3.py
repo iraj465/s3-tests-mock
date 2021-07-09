@@ -2050,6 +2050,8 @@ def test_multi_object_delete_lol():
 def test_lol():
     bucket_name = get_new_bucket()
     client = get_client()
+    main_display_name = get_main_display_name()
+    main_user_id = get_main_user_id()
     status = {'LoggingEnabled': {'TargetBucket': bucket_name, 'TargetGrants': [{'Grantee': {'DisplayName': main_display_name, 'ID': main_user_id,'Type': 'CanonicalUser'},'Permission': 'FULL_CONTROL'}], 'TargetPrefix': 'foologgingprefix'}}
     client.put_bucket_logging(Bucket=bucket_name, BucketLoggingStatus=status)
     client.get_bucket_logging(Bucket=bucket_name)

@@ -2039,7 +2039,7 @@ def test_multi_object_delete_lol():
     for key in key_names:
         obj = bucket.put_object(Bucket=bucket_name,Body=key, Key=key)
 
-    bucket.delete_keys(keys=key_names)
+    bucket.delete_objects(keys=key_names)
     eq(len(response['Deleted']), 2)    
     assert 'Errors' not in response
     eq(len(response['Errors']), 1)

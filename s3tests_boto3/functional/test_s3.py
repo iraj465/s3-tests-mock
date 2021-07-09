@@ -2047,14 +2047,15 @@ def test_multi_object_delete_lol():
     eq(response['Errors'][0]['Key'], 'errKey')
     eq(response['Errors'][0]['Code'], 403)
 
-def test_lol():
-    bucket_name = get_new_bucket()
-    client = get_client()
-    main_display_name = get_main_display_name()
-    main_user_id = get_main_user_id()
-    status = {'LoggingEnabled': {'TargetBucket': bucket_name, 'TargetGrants': [{'Grantee': {'DisplayName': main_display_name, 'ID': main_user_id,'Type': 'CanonicalUser'},'Permission': 'FULL_CONTROL'}], 'TargetPrefix': 'foologgingprefix'}}
-    client.put_bucket_logging(Bucket=bucket_name, BucketLoggingStatus=status)
-    client.get_bucket_logging(Bucket=bucket_name)
+# def test_lol():
+#     bucket_name = get_new_bucket()
+#     client = get_client()
+#     main_display_name = get_main_display_name()
+#     main_user_id = get_main_user_id()
+#     status = {'LoggingEnabled': {'TargetBucket': bucket_name, 'TargetGrants': [{'Grantee': {'DisplayName': main_display_name, 'ID': main_user_id,'Type': 'CanonicalUser'},'Permission': 'FULL_CONTROL'}], 'TargetPrefix': 'foologgingprefix'}}
+#     client.put_bucket_logging(Bucket=bucket_name, BucketLoggingStatus=status)
+#     client.get_bucket_logging(Bucket=bucket_name)
+
 
 @attr(resource='object')
 @attr(method='post')
@@ -9491,6 +9492,37 @@ def test_lifecycle_set_invalid_date():
     e = assert_raises(ClientError, client.put_bucket_lifecycle_configuration, Bucket=bucket_name, LifecycleConfiguration=lifecycle)
     status, error_code = _get_status_and_error_code(e.response)
     eq(status, 400)
+
+@attr(resource='bucket')
+@attr(method='put')
+@attr(operation='set lifecycle config transition with not iso8601 date')
+@attr('lifecycle')
+@attr(assertion='fails 400')
+def test_lifecycle_transition_set_invalid_date():
+    bucket_name = get_new_bucket()
+    client = get_client()
+    rules=[{'ID': 'rule1', 'Expiration': {'Date': '2023-09-27'},'Transitions': [{'Date': '20220927','StorageClass': 'GLACIER'}],'Prefix': 'test1/', 'Status':'Enabled'}]
+    lifecycle = {'Rules': rules}
+    e = assert_raises(ClientError, client.put_bucket_lifecycle_configuration, Bucket=bucket_name, LifecycleConfiguration=lifecycle)
+    status, error_code = _get_status_and_error_code(e.response)
+    eq(status, 400)
+    
+@attr(resource='bucket')
+@attr(method='get')
+@attr(operation='get lifecycle config transition')
+@attr('lifecycle')
+def test_lifecycle_policy_transition():
+    bucket_name = get_new_bucket()
+    client = get_client()
+    rules=[{'ID': 'rule1', 'Expiration': {'Days': 1},'Transitions': [{'Days': 3, 'StorageClass': 'GLACIER'}],'Prefix': 'test1/', 'Status':'Enabled'}]
+    lifecycle = {'Rules': rules}
+    response = client.put_bucket_lifecycle_configuration(Bucket=bucket_name, LifecycleConfiguration=lifecycle)
+    eq(response['ResponseMetadata']['HTTPStatusCode'], 200)
+    
+    response = client.get_bucket_lifecycle_configuration(Bucket=bucket_name)
+    assert 'Transitions' in response['Rules'][0]
+    eq(len(response['Rules']['Transitions']), 1)
+
 
 @attr(resource='bucket')
 @attr(method='put')

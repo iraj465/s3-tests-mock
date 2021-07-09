@@ -2052,7 +2052,10 @@ def test_multi_object_delete_lol():
     main_client.put_object_acl(Bucket=bucket_name, Key='errKey', AccessControlPolicy=grant)
 
     objs_dict = _make_objs_dict(key_names=key_names)
-    response = alt_client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
+    try:
+        response = alt_client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
+    except Exception as e:
+        print("Error is \n",e)
 
     eq(len(response['Deleted']), 1)
     assert 'Errors' in response

@@ -2040,12 +2040,9 @@ def test_multi_object_delete_lol():
         obj = bucket.put_object(Bucket=bucket_name,Body=key, Key=key)
 
     bucket.delete_keys(keys=key_names)
-    response = main_client.list_objects(Bucket=bucket_name)
-    eq(len(response['Contents']), 2)
-    
-    assert 'Errors' not in in response
+    eq(len(response['Deleted']), 2)    
+    assert 'Errors' not in response
     eq(len(response['Errors']), 1)
-    eq(len(response['Deleted']), 1)
     eq(response['Errors'][0]['Key'], 'errKey')
     eq(response['Errors'][0]['Code'], 403)
 

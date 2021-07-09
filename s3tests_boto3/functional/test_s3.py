@@ -2033,9 +2033,14 @@ def test_multi_objectv2_delete():
 @attr(assertion='error in deleting multiple objects with a single call')
 def test_multi_object_delete_lol():
     key_names = ['key0', 'errKey']
-    bucket_name = _create_objects(keys=key_names)
+    bucket_name = get_new_bucket_name()
     main_client = get_client()
-    alt_client =  get_alt_client()
+    alt_client = get_alt_client()
+
+    main_client.create_bucket(Bucket=bucket_name, ACL='public-read-write')
+    for key in key_names:
+        main_client.put_object(Bucket=bucket_name,Body=key, Key=key)
+
     response = main_client.list_objects(Bucket=bucket_name)
     eq(len(response['Contents']), 2)
 
@@ -2045,18 +2050,15 @@ def test_multi_object_delete_lol():
     main_user_id = get_main_user_id()
     main_display_name = get_main_display_name()
 
-    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
-    main_client.put_object_acl(Bucket=bucket_name, Key='key0', AccessControlPolicy=grant)
+    # grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
+    # main_client.put_object_acl(Bucket=bucket_name, Key='key0', AccessControlPolicy=grant)
     
-    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
+    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
     main_client.put_object_acl(Bucket=bucket_name, Key='errKey', AccessControlPolicy=grant)
 
     objs_dict = _make_objs_dict(key_names=key_names)
-    try:
-        response = alt_client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
-    except Exception as e:
-        print("Error is \n",e)
-        response = main_client.list_objects(Bucket=bucket_name)
+    response = alt_client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
+    response = main_client.list_objects(Bucket=bucket_name)
 
     eq(len(response['Deleted']), 1)
     assert 'Errors' in response

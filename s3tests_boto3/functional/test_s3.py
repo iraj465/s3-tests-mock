@@ -2037,7 +2037,7 @@ def test_multi_object_delete_lol():
     main_client = get_client()
     alt_client = get_alt_client()
 
-    main_client.create_bucket(Bucket=bucket_name, ACL='public-read')
+    main_client.create_bucket(Bucket=bucket_name, ACL='public-read-write')
     for key in key_names:
         main_client.put_object(Bucket=bucket_name,Body=key, Key=key)
 

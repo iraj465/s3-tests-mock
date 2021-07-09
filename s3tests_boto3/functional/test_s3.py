@@ -2056,6 +2056,7 @@ def test_multi_object_delete_lol():
         response = alt_client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
     except Exception as e:
         print("Error is \n",e)
+        response = main_client.list_objects(Bucket=bucket_name)
 
     eq(len(response['Deleted']), 1)
     assert 'Errors' in response

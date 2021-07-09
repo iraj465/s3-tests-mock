@@ -2037,7 +2037,7 @@ def test_multi_object_delete_lol():
     main_client = get_client()
     alt_client = get_alt_client()
 
-    main_client.create_bucket(Bucket=bucket_name, ACL='public-read-write')
+    main_client.create_bucket(Bucket=bucket_name, ACL='public-read')
     for key in key_names:
         main_client.put_object(Bucket=bucket_name,Body=key, Key=key)
 
@@ -2060,9 +2060,10 @@ def test_multi_object_delete_lol():
     response = alt_client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
     # response = main_client.list_objects(Bucket=bucket_name)
 
-    eq(len(response['Deleted']), 1)
+    
     assert 'Errors' in response
     eq(len(response['Errors']), 1)
+    eq(len(response['Deleted']), 1)
     eq(response['Errors'][0]['Key'], 'errKey')
     eq(response['Errors'][0]['Code'], 403)
 

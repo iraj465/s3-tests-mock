@@ -2048,7 +2048,7 @@ def test_multi_object_delete_lol():
     grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
     main_client.put_object_acl(Bucket=bucket_name, Key='key0', AccessControlPolicy=grant)
     
-    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
+    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
     main_client.put_object_acl(Bucket=bucket_name, Key='errKey', AccessControlPolicy=grant)
 
     objs_dict = _make_objs_dict(key_names=key_names)

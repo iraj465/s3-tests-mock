@@ -2040,13 +2040,20 @@ def test_multi_object_delete_lol():
         obj = bucket.put_object(Bucket=bucket_name,Body=key, Key=key)
 
     objs_dict = _make_objs_dict(key_names=key_names)
-    bucket.delete_objects(Delete=objs_dict)
+    response = bucket.delete_objects(Delete=objs_dict)
     eq(len(response['Deleted']), 2)    
     assert 'Errors' not in response
-    eq(len(response['Errors']), 1)
+    eq(len(response['Errors']),1)
     eq(response['Errors'][0]['Key'], 'errKey')
     eq(response['Errors'][0]['Code'], 403)
 
+def test_lol():
+    bucket_name = get_new_bucket()
+    client = get_S3client()
+    status = {'LoggingEnabled': {'TargetBucket': bucket_name, 'TargetGrants': [{'Grantee': {'DisplayName': main_display_name, 'ID': main_user_id,'Type': 'CanonicalUser'},'Permission': 'FULL_CONTROL'}], 'TargetPrefix': 'foologgingprefix'}}
+    client.put_bucket_logging(Bucket=bucket_name, BucketLoggingStatus=status)
+    client.get_bucket_logging(Bucket=bucket_name)
+    
 @attr(resource='object')
 @attr(method='post')
 @attr(operation='delete multiple objects error')
@@ -2061,7 +2068,7 @@ def test_multi_object_delete_lol2():
 
     key_names = ['key0', 'key2']
     objs_dict = _make_objs_dict(key_names=key_names)
-    bucket.delete_objects(Delete=objs_dict)
+    response = bucket.delete_objects(Delete=objs_dict)
     eq(len(response['Deleted']), 2)    
     assert 'Errors' not in response
     eq(len(response['Errors']), 1)

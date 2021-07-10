@@ -2029,23 +2029,41 @@ def test_multi_objectv2_delete():
 
 @attr(resource='object')
 @attr(method='post')
-@attr(operation='delete multiple objects error')
-@attr(assertion='error in deleting multiple objects with a single call')
-def test_multi_object_delete_lol():
-    key_names = ['key0', 'key1']
-    bucket_name = get_new_bucket_name()
-    bucket = get_new_bucket_resource(name=bucket_name)
+@attr(operation='delete multiple objects duplicate key error')
+@attr(assertion='error in deleting multiple objects with duplicate keys')
+def test_multi_object_delete_duplicate_key_error():
+    key_names = ['foo', 'bar']
+    bucket_name = _create_objects(keys=key_names)
+    client = get_client()
+    response = client.list_objects(Bucket=bucket_name)
+    eq(len(response['Contents']), 2)
 
-    for key in key_names:
-        obj = bucket.put_object(Bucket=bucket_name,Body=key, Key=key)
+    delete_key_names = ['foo', 'foo']
+    objs_dict = _make_objs_dict(key_names=delete_key_names)
+    response = client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
 
-    objs_dict = _make_objs_dict(key_names=key_names)
-    response = bucket.delete_objects(Delete=objs_dict)
-    eq(len(response['Deleted']), 2)    
-    assert 'Errors' not in response
-    eq(len(response['Errors']),1)
-    eq(response['Errors'][0]['Key'], 'errKey')
-    eq(response['Errors'][0]['Code'], 403)
+    eq(len(response['Deleted']), 1)
+    eq(response['Deleted'][0]['Key'], 'foo')
+    assert 'Errors' in response
+    eq(len(response['Errors']), 1)
+    eq(response['Errors'][0]['Key'], 'foo')
+
+
+# def test_multi_object_delete_lol():
+#     key_names = ['key0', 'key1']
+#     bucket_name = get_new_bucket_name()
+#     bucket = get_new_bucket_resource(name=bucket_name)
+
+#     for key in key_names:
+#         obj = bucket.put_object(Bucket=bucket_name,Body=key, Key=key)
+
+#     objs_dict = _make_objs_dict(key_names=key_names)
+#     response = bucket.delete_objects(Delete=objs_dict)
+#     eq(len(response['Deleted']), 2)    
+#     assert 'Errors' not in response
+#     eq(len(response['Errors']),1)
+#     eq(response['Errors'][0]['Key'], 'errKey')
+#     eq(response['Errors'][0]['Code'], 403)
 
 # def test_lol():
 #     bucket_name = get_new_bucket()
@@ -9511,7 +9529,7 @@ def test_lifecycle_transition_set_invalid_date():
 @attr(method='get')
 @attr(operation='get lifecycle config transition')
 @attr('lifecycle')
-def test_lifecycle_policy_transition():
+def test_lifecycle_config_transition():
     bucket_name = get_new_bucket()
     client = get_client()
     rules=[{'ID': 'rule1', 'Expiration': {'Days': 1},'Transitions': [{'Days': 3, 'StorageClass': 'GLACIER'}],'Prefix': 'test1/', 'Status':'Enabled'}]

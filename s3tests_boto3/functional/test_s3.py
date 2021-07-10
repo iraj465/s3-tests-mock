@@ -2027,6 +2027,7 @@ def test_multi_objectv2_delete():
     response = client.list_objects_v2(Bucket=bucket_name)
     assert 'Contents' not in response
 
+#start
 @attr(resource='object')
 @attr(method='post')
 @attr(operation='delete multiple objects duplicate key error')
@@ -2048,6 +2049,36 @@ def test_multi_object_delete_duplicate_key_error():
     eq(len(response['Errors']), 1)
     eq(response['Errors'][0]['Key'], 'foo')
 
+@attr(resource='object')
+@attr(method='post')
+@attr(operation='delete multiple objects has upper limit of 1000 keys')
+@attr(assertion='fails 400')
+def test_multi_object_delete_key_limit():
+    key_names = [f"key-{i}" for i in range(1001)]
+    bucket_name = _create_objects(keys=key_names)
+    client = get_client()
+
+    response = client.list_objects(Bucket=bucket_name)
+    eq(len(response['Contents']), 1001)
+
+    objs_dict = _make_objs_dict(key_names=key_names)
+    e = assert_raises(ClientError,client.delete_objects,Bucket=bucket_name,Delete=objs_dict)
+    eq(e.response['Error']['Code'], 400)
+
+@attr(resource='bucket')
+@attr(method='put')
+@attr(operation='set lifecycle config transition with not iso8601 date')
+@attr('lifecycle')
+@attr(assertion='fails 400')
+def test_lifecycle_transition_set_invalid_date():
+    bucket_name = get_new_bucket()
+    client = get_client()
+    rules=[{'ID': 'rule1', 'Expiration': {'Date': '2023-09-27'},'Transitions': [{'Date': '20220927','StorageClass': 'GLACIER'}],'Prefix': 'test1/', 'Status':'Enabled'}]
+    lifecycle = {'Rules': rules}
+    e = assert_raises(ClientError, client.put_bucket_lifecycle_configuration, Bucket=bucket_name, LifecycleConfiguration=lifecycle)
+    status, error_code = _get_status_and_error_code(e.response)
+    eq(status, 400)
+# end 
 
 # def test_multi_object_delete_lol():
 #     key_names = ['key0', 'key1']
@@ -9511,20 +9542,7 @@ def test_lifecycle_set_invalid_date():
     status, error_code = _get_status_and_error_code(e.response)
     eq(status, 400)
 
-@attr(resource='bucket')
-@attr(method='put')
-@attr(operation='set lifecycle config transition with not iso8601 date')
-@attr('lifecycle')
-@attr(assertion='fails 400')
-def test_lifecycle_transition_set_invalid_date():
-    bucket_name = get_new_bucket()
-    client = get_client()
-    rules=[{'ID': 'rule1', 'Expiration': {'Date': '2023-09-27'},'Transitions': [{'Date': '20220927','StorageClass': 'GLACIER'}],'Prefix': 'test1/', 'Status':'Enabled'}]
-    lifecycle = {'Rules': rules}
-    e = assert_raises(ClientError, client.put_bucket_lifecycle_configuration, Bucket=bucket_name, LifecycleConfiguration=lifecycle)
-    status, error_code = _get_status_and_error_code(e.response)
-    eq(status, 400)
-
+# written
 @attr(resource='bucket')
 @attr(method='get')
 @attr(operation='get lifecycle config transition')

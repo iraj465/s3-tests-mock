@@ -2098,7 +2098,7 @@ def test_lulu():
 
     # main_client.put_object_acl(Bucket=bucket_name, Key='foo', AccessControlPolicy=grant)
 
-    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ_ACP'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
+    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
 
     alt_client.put_object_acl(Bucket=bucket_name, Key='foo', AccessControlPolicy=grant)
     key_names = ['foo']

@@ -2079,33 +2079,53 @@ def test_lifecycle_transition_set_invalid_date():
     status, error_code = _get_status_and_error_code(e.response)
     eq(status, 400)
 
+@attr(resource='bucket')
+@attr(method='put')
+@attr(operation='del error')
+@attr(assertion='does 400')
 def test_lulu():
-    bucket_name = get_new_bucket_name()
-    main_client = get_client()
-    alt_client = get_alt_client()
-
-    main_client.create_bucket(Bucket=bucket_name)
-
-    main_client.put_object(Bucket=bucket_name, Key='foo', Body='bar')
-
+    key_names = ['foo','bar']
+    bucket_name = _create_objects(keys=key_names)
     alt_user_id = get_alt_user_id()
     alt_display_name = get_alt_display_name()
 
     main_user_id = get_main_user_id()
     main_display_name = get_main_display_name()
 
-    # grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'FULL_CONTROL'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
-
-    # main_client.put_object_acl(Bucket=bucket_name, Key='foo', AccessControlPolicy=grant)
-
-    grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
-
-    alt_client.put_object_acl(Bucket=bucket_name, Key='foo', AccessControlPolicy=grant)
-    key_names = ['foo']
+    s3 = boto3.resource('s3') 
     objs_dict = _make_objs_dict(key_names=key_names)
-    response = alt_client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
+    bucket = s3.Bucket(bucket_name)
+
+    # bucket_acl = s3.BucketAcl(bucket_name)
+    # grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
+    # bucket_acl.put(Key='foo', AccessControlPolicy=grant)
+
+    bucket.delete_objects(Delete=objs_dict)
     print(response)
 
+@attr(resource='bucket')
+@attr(method='put')
+@attr(operation='del error')
+@attr(assertion='fails 400')
+def test_lulu2():
+    key_names = ['foo','bar']
+    bucket_name = _create_objects(keys=key_names)
+    alt_user_id = get_alt_user_id()
+    alt_display_name = get_alt_display_name()
+
+    main_user_id = get_main_user_id()
+    main_display_name = get_main_display_name()
+
+    objs_dict = _make_objs_dict(key_names=key_names)
+    response = client.delete_objects(Bucket=bucket_name, Delete=objs_dict)
+
+
+    # bucket_acl = s3.BucketAcl(bucket_name)
+    # grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
+    # bucket_acl.put(Key='foo', AccessControlPolicy=grant)
+
+    bucket.delete_objects(Delete=objs_dict)
+    print(response)
 # end 
 
 # def test_multi_object_delete_lol():

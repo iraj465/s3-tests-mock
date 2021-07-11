@@ -2092,9 +2092,8 @@ def test_lulu():
     main_user_id = get_main_user_id()
     main_display_name = get_main_display_name()
 
-    s3 = boto3.resource('s3') 
     objs_dict = _make_objs_dict(key_names=key_names)
-    bucket = s3.Bucket(bucket_name)
+    bucket = get_new_bucket_resource()
 
     # bucket_acl = s3.BucketAcl(bucket_name)
     # grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
@@ -2110,6 +2109,7 @@ def test_lulu():
 def test_lulu2():
     key_names = ['foo','bar']
     bucket_name = _create_objects(keys=key_names)
+    client = get_client()
     alt_user_id = get_alt_user_id()
     alt_display_name = get_alt_display_name()
 
@@ -2124,7 +2124,6 @@ def test_lulu2():
     # grant = { 'Grants': [{'Grantee': {'ID': alt_user_id, 'Type': 'CanonicalUser' }, 'Permission': 'READ'}], 'Owner': {'DisplayName': main_display_name, 'ID': main_user_id}}
     # bucket_acl.put(Key='foo', AccessControlPolicy=grant)
 
-    bucket.delete_objects(Delete=objs_dict)
     print(response)
 # end 
 

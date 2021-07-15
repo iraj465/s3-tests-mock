@@ -2058,8 +2058,14 @@ def test_multi_object_delete_key_limit():
     bucket_name = _create_objects(keys=key_names)
     client = get_client()
 
+    paginator = client.get_paginator('list_objects')
+    pages = paginator.paginate(Bucket=bucket_name)
+    numKeys = 0
+    for page in pages:
+        numKeys += len(page['Contents'])
+    
     response = client.list_objects(Bucket=bucket_name)
-    eq(len(response['Contents']), 1001)
+    eq(numKeys, 1001)
 
     objs_dict = _make_objs_dict(key_names=key_names)
     e = assert_raises(ClientError,client.delete_objects,Bucket=bucket_name,Delete=objs_dict)

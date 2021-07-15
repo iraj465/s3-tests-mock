@@ -2069,7 +2069,9 @@ def test_multi_object_delete_key_limit():
 
     objs_dict = _make_objs_dict(key_names=key_names)
     e = assert_raises(ClientError,client.delete_objects,Bucket=bucket_name,Delete=objs_dict)
-    eq(e.response['Error']['Code'], 400)
+
+    status, error_code = _get_status_and_error_code(e.response)
+    eq(status, 400)
 
 @attr(resource='bucket')
 @attr(method='put')
